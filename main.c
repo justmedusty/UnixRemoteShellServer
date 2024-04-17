@@ -248,6 +248,7 @@ int main(void) {
                     }
                     if(pid == 0){
                         handle_client(newFd);
+
                     } else{
                         continue;
                     }

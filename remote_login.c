@@ -8,7 +8,7 @@
 #include "string.h"
 #include "crypt.h"
 #include <shadow.h>
-
+#include "HandleClientShellSession.h"
 /*
  * We can use the shadow.h and check the user entry from /etc/shadow to verify a users identity with the password, this could be used to create your own implemenation of ssh
  * or any other kind of remote shell operations. We will use shadow.h to get the user
@@ -57,7 +57,7 @@ int authenticate_user(const char *username, const char *password) {
  * The main function which will be taking input from stdin and feeding it to our auth function which will attempt to authenticate the user based on
  * records in the shadow file, we will use fgets for line-at-a-time input
  */
-int unixUserAuth(){
+int unixUserAuth(int clientSocket){
 
     char username[MAX_USERNAME_LENGTH];
     char password[MAX_PASSWORD_LENGTH];
@@ -72,8 +72,7 @@ int unixUserAuth(){
 
 
     if(authenticate_user(username,password) == 0){
-        //handle remote shell stuff here
-        return EXIT_SUCCESS;
+        handle_client(clientSocket);
     }else{
         //do not handle remote shell stuff
         return EXIT_FAILURE;
