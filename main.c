@@ -102,8 +102,9 @@ int get_listener_socket(void) {
         // We are handling errors appropriately along the way of course. Lastly , we will make a call to inet_ntop() to get our
         //address in string form as opposed to binary and then print it to the screen.
         char serverIp[INET6_ADDRSTRLEN];
-        inet_ntop(pointer->ai_addr->sa_family, get_in_addr((struct sockaddr *) &pointer->ai_addr), serverIp, INET6_ADDRSTRLEN);
-        printf("Server IP is %s\n",serverIp);
+        inet_ntop(pointer->ai_addr->sa_family, get_in_addr((struct sockaddr *) &pointer->ai_addr), serverIp,
+                  INET6_ADDRSTRLEN);
+        printf("Server IP is %s\n", serverIp);
         break;
     }
 
@@ -142,7 +143,7 @@ void add_to_pfds(struct pollfd *pollFileDescriptors[], int newFd, int *fd_count,
     (*pollFileDescriptors)[*fd_count].fd = newFd;
     (*pollFileDescriptors)[*fd_count].events = POLLIN;
     //Iterate the count so that we will be able to iterate over this file descriptor later
-    (*fd_count) ++;
+    (*fd_count)++;
 
 }
 
@@ -151,8 +152,6 @@ void del_pfds(struct pollfd pollFileDescriptors[], int i, int *fd_count) {
     pollFileDescriptors[i] = pollFileDescriptors[*fd_count - 1];
     (*fd_count)--;
 }
-
-
 
 
 //Our main function where our telnet server loop will happen
@@ -191,7 +190,7 @@ int main(void) {
     pollFileDescriptors[0].fd = listener;
 
     //We will assign event POLLIN which means we want to know when there is an incoming connection on this socket
-    pollFileDescriptors[0].events = POLLIN;
+    pollFileDescriptors[0].events = POLLIN, POLL_ERR,POLL_HUP;
 
     //Set our fd_count to 1 since we have just added our listener
     fd_count = 1;
@@ -240,33 +239,39 @@ int main(void) {
 
                     //Else it is NOT the listener, and it is a client waiting to send a message to the telnet server
                 } else {
-
                     int pid = fork();
-                    if(pid == -1){
+                    if (pid == -1) {
                         perror("fork");
                         exit(EXIT_FAILURE);
                     }
-                    if(pid == 0){
+                    if (pid == 0) {
                         handle_client(newFd);
-
-                    } else{
+                        exit(EXIT_SUCCESS); // exit child process after handling client
+                    } else {
+                        printf("Poll server :  connection on socket %d closed \n",pollFileDescriptors[i].fd);
+                        fflush(stdout);
+                        close(pollFileDescriptors[i].fd);
+                        del_pfds(pollFileDescriptors, i, &fd_count);
+                        wait(NULL);
                         continue;
+
                     }
-
-
-
-
-
                 }
             }
+                // Check for POLLHUP and POLLERR to handle disconnections
+            else if (pollFileDescriptors[i].revents & (POLLHUP | POLLERR)) {
+                printf("Client on socket %d disconnected\n", pollFileDescriptors[i].fd);
+                close(pollFileDescriptors[i].fd);
+                del_pfds(pollFileDescriptors, i, &fd_count);
 
+            }
         }
-
-
     }
-
-
     //Unreachable code here but we don't give a fuck we'll write it anyway, we're freaks
     return EXIT_SUCCESS;
 
 }
+
+
+
+

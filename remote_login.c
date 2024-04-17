@@ -72,6 +72,7 @@ int unixUserAuth(int clientSocket){
 
 
     if(authenticate_user(username,password) == 0){
+        
         handle_client(clientSocket);
     }else{
         //do not handle remote shell stuff
