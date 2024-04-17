@@ -8,7 +8,9 @@
 #include "string.h"
 #include "crypt.h"
 #include <shadow.h>
+#include <unistd.h>
 #include "HandleClientShellSession.h"
+#include "pwd.h"
 /*
  * We can use the shadow.h and check the user entry from /etc/shadow to verify a users identity with the password, this could be used to create your own implemenation of ssh
  * or any other kind of remote shell operations. We will use shadow.h to get the user
@@ -53,28 +55,40 @@ int authenticate_user(const char *username, const char *password) {
     return EXIT_FAILURE;
 
 }
+
 /*
  * The main function which will be taking input from stdin and feeding it to our auth function which will attempt to authenticate the user based on
  * records in the shadow file, we will use fgets for line-at-a-time input
  */
-int unixUserAuth(int clientSocket){
+int unixUserAuth(int clientSocket) {
 
     char username[MAX_USERNAME_LENGTH];
     char password[MAX_PASSWORD_LENGTH];
 
     printf("Enter username: ");
-    fgets(username,sizeof username,stdin);
+    fgets(username, sizeof username, stdin);
     username[strcspn(username, "\n")] = '\0';
     printf("Enter password: ");
-    fgets(password,sizeof password,stdin);
+    fgets(password, sizeof password, stdin);
     password[strcspn(password, "\n")] = '\0';
 
 
+    if (authenticate_user(username, password) == 0) {
 
-    if(authenticate_user(username,password) == 0){
-        
+        struct spwd *spw = getspnam(username);
+        struct passwd *pw = getpwnam(spw->sp_namp);
+
+        uid_t uid = pw->pw_uid;
+
+        //Get the uid of the user and set it as the effective user id of the process
+        //to make sure the process does not have super user permissions
+        if (seteuid(uid) == -1){
+            perror("seteuid");
+            exit(EXIT_FAILURE);
+        }
+
         handle_client(clientSocket);
-    }else{
+    } else {
         //do not handle remote shell stuff
         return EXIT_FAILURE;
     }
