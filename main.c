@@ -66,7 +66,7 @@ int main(void) {
     pollFileDescriptors[0].fd = listener;
 
     //We will assign event POLLIN which means we want to know when there is an incoming connection on this socket
-    pollFileDescriptors[0].events = POLLIN, POLL_ERR,POLL_HUP;
+    pollFileDescriptors[0].events = POLLIN, POLL_ERR, POLL_HUP;
 
     //Set our fd_count to 1 since we have just added our listener
     fd_count = 1;
@@ -111,11 +111,6 @@ int main(void) {
                                          get_in_addr((struct sockaddr *) &clientAddress), clientIP, INET6_ADDRSTRLEN),
                                newFd);
 
-                    }
-
-                    //Else it is NOT the listener, and it is a client waiting to send a message to the telnet server
-                } else {
-                    if(pollFileDescriptors[i].fd == newFd){
                         int pid = fork();
                         if (pid == -1) {
                             perror("fork");
@@ -125,16 +120,16 @@ int main(void) {
                             handle_client(newFd);
                             exit(EXIT_SUCCESS); // exit child process after handling client
                         } else {
-                            newFd = -1;
-                            close(pollFileDescriptors[i].fd);
-                            del_pfds(pollFileDescriptors, i, &fd_count);
+                            close(newFd);
                             continue;
 
                         }
 
                     }
 
+                    //Else it is NOT the listener, and it is a client waiting to send a message to the telnet server
                 }
+
                 continue;
             }
                 // Check for POLLHUP and POLLERR to handle disconnections
@@ -146,8 +141,6 @@ int main(void) {
             }
         }
     }
-    //Unreachable code here, but we don't give a fuck we'll write it anyway, we're freaks
-    return EXIT_SUCCESS;
 
 }
 
