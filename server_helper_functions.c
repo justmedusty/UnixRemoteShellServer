@@ -2,7 +2,7 @@
 // Created by dustyn on 4/17/24.
 //
 
-#include "ServerHelperFunctions.h"
+#include "server_helper_functions.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

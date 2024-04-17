@@ -1,0 +1,8 @@
+//
+// Created by dustyn on 4/17/24.
+//
+
+#ifndef UNIXREMOTESHELLSERVER_HANDLE_REMOTE_SHELL_H
+#define UNIXREMOTESHELLSERVER_HANDLE_REMOTE_SHELL_H
+void handle_client(int client_fd);
+#endif //UNIXREMOTESHELLSERVER_HANDLE_REMOTE_SHELL_H

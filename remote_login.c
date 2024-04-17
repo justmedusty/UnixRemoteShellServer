@@ -9,7 +9,7 @@
 #include "crypt.h"
 #include <shadow.h>
 #include <unistd.h>
-#include "HandleClientShellSession.h"
+#include "handle_remote_shell.h"
 #include "pwd.h"
 /*
  * We can use the shadow.h and check the user entry from /etc/shadow to verify a users identity with the password, this could be used to create your own implemenation of ssh

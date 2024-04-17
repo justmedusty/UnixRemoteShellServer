@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <sys/wait.h>
-#include "HandleClientShellSession.h"
+#include "handle_remote_shell.h"
 #include "unistd.h"
 #include "stdlib.h"
 #include "sys/poll.h"

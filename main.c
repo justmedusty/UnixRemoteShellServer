@@ -8,8 +8,8 @@
 #include <arpa/inet.h>
 #include <signal.h>
 #include <poll.h>
-#include "HandleClientShellSession.h"
-#include "ServerHelperFunctions.h"
+#include "handle_remote_shell.h"
+#include "server_helper_functions.h"
 //The port from which the client will connect to
 #define PORT "6969"
 //The backlog will define how many connections can be in the queue at a time
