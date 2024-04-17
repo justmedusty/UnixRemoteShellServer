@@ -41,7 +41,7 @@ void handle_client(int client_fd) {
         }
 
         // Execute the shell
-        execlp("/bin/sh", "/bin/sh", NULL);
+        execlp("/bin/bash", "/bin/bash", NULL);
         perror("execlp");
         exit(EXIT_FAILURE);
     } else {
@@ -51,7 +51,7 @@ void handle_client(int client_fd) {
 
 
         // Create a pollfd for polling both the client socket and the shell stdout
-        struct pollfd fds[3];
+        struct pollfd fds[2];
         fds[0].fd = client_fd;
         fds[0].events = POLLIN;
         fds[1].fd = from_shell[0];
@@ -111,23 +111,6 @@ void handle_client(int client_fd) {
                 }
             }
 
-            if (fds[2].revents & POLLIN) {
-                ssize_t num_read = read(from_shell[0], buffer, BUFFER_SIZE);
-                if (num_read == -1) {
-                    perror("read");
-                    exit(EXIT_FAILURE);
-                } else if (num_read == 0) {
-                    // Shell closed stderr
-                    break;
-                }
-
-                // Send data to client
-                ssize_t num_sent = send(client_fd, buffer, num_read, 0);
-                if (num_sent == -1) {
-                    perror("send");
-                    exit(EXIT_FAILURE);
-                }
-            }
         }
 
         // Close client socket and wait for shell process to terminate
