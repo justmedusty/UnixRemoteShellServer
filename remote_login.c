@@ -87,9 +87,9 @@ int unixUserAuth(int clientSocket) {
             exit(EXIT_FAILURE);
         }
 
-        handle_client(clientSocket);
+        return 0;
     } else {
         //do not handle remote shell stuff
-        return EXIT_FAILURE;
+        return -1;
     }
 }

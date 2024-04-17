@@ -7,4 +7,6 @@ add_executable(UnixRemoteShellServer main.c
         remote_login.h
         remote_login.c
         HandleClientShellSession.c
-        HandleClientShellSession.h)
+        HandleClientShellSession.h
+        ServerHelperFunctions.c
+        ServerHelperFunctions.h)
