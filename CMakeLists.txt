@@ -9,4 +9,6 @@ add_executable(UnixRemoteShellServer main.c
         handle_remote_shell.c
         handle_remote_shell.h
         server_helper_functions.c
-        server_helper_functions.h)
+        server_helper_functions.h
+        handle_pseudoterminal.c
+        handle_pseudoterminal.h)

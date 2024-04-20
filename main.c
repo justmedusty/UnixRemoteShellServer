@@ -88,6 +88,7 @@ int main(void) {
             //If the return event is POLLIN...
             if (pollFileDescriptors[i].revents & POLLIN) {
 
+
                 //We will check if it is the listener, POLLIN from the listener means that someone is ready to connect to our telnet server!
                 if (pollFileDescriptors[i].fd == listener) {
 
@@ -99,19 +100,19 @@ int main(void) {
 
                     //Standard error checking, if newFd is -1 , houston we have a problem
                     if (newFd == -1) {
-                        perror("accept() system call");
+                        perror("accept");
                     } else {
-                        //Otherwise add to our polling file descriptors list with a call to our add_to_pfds call above,which will add it to the list , dynamically handle size, and increment the count for us!
-                        add_to_pfds(&pollFileDescriptors, newFd, &fd_count, &fd_size);
+
+                        /*
+                         * We will fork and call the handle client function with this new fd in order to get the user connected to the remote shell
+                         * We do not need to keep adding to the polling fds to the array since the rest will be taken care of in the child process after
+                         * the fork below. We can then close the new fd once it is passed to handle_client
+                         */
 
                         //Print out the new connection to the console with the ip address converted from network (binary) to presentation (string) via the inet_ntop() system call
-                        printf("Poll server : new connection from %s  on socket %d\n",
-
-                               inet_ntop(clientAddress.ss_family,
-                                         get_in_addr((struct sockaddr *) &clientAddress), clientIP, INET6_ADDRSTRLEN),
-                               newFd);
-
+                        printf("Poll server : new connection from %s  on socket %d\n",inet_ntop(clientAddress.ss_family,get_in_addr((struct sockaddr *) &clientAddress), clientIP, INET6_ADDRSTRLEN),newFd);
                         int pid = fork();
+
                         if (pid == -1) {
                             perror("fork");
                             exit(EXIT_FAILURE);
@@ -127,9 +128,7 @@ int main(void) {
 
                     }
 
-                    //Else it is NOT the listener, and it is a client waiting to send a message to the telnet server
                 }
-
                 continue;
             }
                 // Check for POLLHUP and POLLERR to handle disconnections

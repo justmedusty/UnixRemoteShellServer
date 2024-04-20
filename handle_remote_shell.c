@@ -11,6 +11,7 @@
 #include "sys/socket.h"
 #include "string.h"
 #include "remote_login.h"
+#include "handle_pseudoterminal.h"
 
 #define BUFFER_SIZE 1024
 
@@ -69,9 +70,22 @@ void handle_client(int client_fd) {
         fds[1].events = POLLIN;
 
 
+        int master,slave;
+        if( handle_pseudoterminal(&master,&slave) == -1){
+            fprintf(stderr,"Could not create pts pair\n");
+            exit(EXIT_FAILURE);
+        }
+
+        dup2(slave,client_fd);
+
+
+        char command[6];
+
+
         while (1) {
+            memset(&buffer,0,sizeof buffer);
             // Poll for events
-            int ret = poll(fds, 2, 25);
+            int ret = poll(fds, 2, 5);
             if (ret == -1) {
                 perror("poll");
                 exit(EXIT_FAILURE);
@@ -79,10 +93,14 @@ void handle_client(int client_fd) {
 
             // Check for events on client socket
             if (fds[0].revents & POLLIN) {
+
                 ssize_t num_received = recv(client_fd, buffer, BUFFER_SIZE, 0);
+
                 if (num_received == -1) {
+
                     perror("recv");
                     exit(EXIT_FAILURE);
+
                 } else if (num_received == 0) {
                     // Client closed connection
                     break;
@@ -94,14 +112,8 @@ void handle_client(int client_fd) {
                         buffer[write_index++] = buffer[i];
                     }
                 }
-                if(strcmp(buffer,"exit") == 0){
-                    close(client_fd);
-                    close(to_shell[1]);
-                    close(from_shell[0]);
-                    printf("Killing child in process %d\n",getpid());
-                    kill(child_pid,SIGKILL);
-                    break;
-                }
+
+
 
                 // Write data to shell process's stdin
                 ssize_t num_written = write(to_shell[1], buffer, num_received);
